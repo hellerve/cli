@@ -1,0 +1,13 @@
+(module "cli"
+  (exports
+    (list "command" command)
+    (list "create" creat)
+    (list "play" play))
+
+  (command (lambda (name f arguments)
+    (nil)))
+
+  (create (lambda (commands . name)
+    (nil)))
+
+  (play (lambda () (nil))))
