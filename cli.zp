@@ -8,26 +8,57 @@
     (write msg :stderr)))
 
   (write-help (lambda (env)
-    (begin
-      (err-ln "Usage:")
-      (map err-ln
-        (hash:keys-map
-          (lambda (k)
-            (++ "\t" k ": " (get-from env (list k :info :help) "No Documentation")))
-          env)))))
+    (if (truthy? env)
+      (begin
+        (err-ln "Usage:")
+        (map err-ln
+          (hash:keys-map
+            (lambda (k)
+              (++ "\t" k ": " (get-from env (list k :info :help) "No Documentation")))
+            env)))
+      (err-ln "No documentation for command available."))))
 
   (die (lambda (msg env)
     (begin
       (err-ln msg)
+      (err-ln "")
       (write-help env)
       (exit 1))))
 
+  (parse-arg (lambda (env acc arg)
+    (let ((inner-env (get-from env (list :info :arguments))))
+      (cond
+        ((string:starts-with arg "--")
+          (let ((arg (substring arg 2 (length arg))))
+            (if (in? inner-env arg)
+              (make-hash acc (make-hash arg nil))
+              (die (++ "Unrecognized long argument: " arg) (env :commands)))))
+        ((string:starts-with arg "-")
+          (let ((arg (substring arg 1 (length arg)))
+                (inner-env (hash:keys-reduce
+                              (lambda (acc k)
+                                (let ((key (get-from (inner-env k) :short)))
+                                  (if (truthy? key)
+                                    (make-hash acc (make-hash key (make-hash (inner-env k) :long k)))
+                                    acc)))
+                              #{}
+                              inner-env)))
+            (if (in? inner-env arg)
+              (make-hash acc (make-hash ((inner-env arg) :long) nil))
+              (die (++ "Unrecognized short argument: " arg) (env :commands)))))
+        (else (die (++ "Unrecognized argument format: " arg) env))))))
+
+  (parse-args (lambda (args env)
+    (reduce (curry parse-arg env) (make-hash) args)))
+
+  (eval-with-args (lambda (args env)
+    ((env :callback) (parse-args args env))))
 
   (command (lambda (name f info)
-    (make-hash name (make-hash :callback f :info info :type :command))))
+    (make-hash name (make-hash :callback f :info info :type :command :commands #{}))))
 
   (create-inner (lambda (name env commands)
-    (let ((old-state (get-from env name {})))
+    (let ((old-state (get-from env name #{})))
       (if (not (truthy? old-state))
         env
         (make-hash env (make-hash name (make-hash old-state :commands (create-top-level commands))))))))
@@ -41,9 +72,11 @@
       (create-top-level commands))))
 
   (play (lambda (env . args) 
-    (let ((entry (get-from (or (and (> (length args) 0) (car args)) zepto:args) 0)))
+    (let* ((args (or (and (> (length args) 0) (car args)) zepto:args))
+           (entry (get-from args 0))
+           (rest (or (and (> (length args) 1) (cdr args)) [])))
       (if (not (truthy? entry))
           (die "No arguments specified." env)
-          (if (in? env entry)
-            ((get-from env (list entry :callback)))
+          (if (and (in? env entry) (eq? (get-from env (list entry :type)) :command))
+            (eval-with-args rest (env entry))
             (die (++ "Unknown command: " entry) env)))))))
