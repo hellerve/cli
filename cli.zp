@@ -1,13 +1,49 @@
 (module "cli"
   (exports
     (list "command" command)
-    (list "create" creat)
+    (list "create" create)
     (list "play" play))
 
-  (command (lambda (name f arguments)
-    (nil)))
+  (err-ln (lambda (msg)
+    (write msg :stderr)))
 
-  (create (lambda (commands . name)
-    (nil)))
+  (write-help (lambda (env)
+    (begin
+      (err-ln "Usage:")
+      (map err-ln
+        (hash:keys-map
+          (lambda (k)
+            (++ "\t" k ": " (get-from env (list k :info :help) "No Documentation")))
+          env)))))
 
-  (play (lambda () (nil))))
+  (die (lambda (msg env)
+    (begin
+      (err-ln msg)
+      (write-help env)
+      (exit 1))))
+
+
+  (command (lambda (name f info)
+    (make-hash name (make-hash :callback f :info info :type :command))))
+
+  (create-inner (lambda (name env commands)
+    (let ((old-state (get-from env name {})))
+      (if (not (truthy? old-state))
+        env
+        (make-hash env (make-hash name (make-hash old-state :commands (create-top-level commands))))))))
+
+  (create-top-level (lambda (commands)
+    (apply make-hash commands)))
+
+  (create (lambda (commands . args)
+    (if (truthy? args)
+      (create-inner (car args) (cadr args) commands)
+      (create-top-level commands))))
+
+  (play (lambda (env . args) 
+    (let ((entry (get-from (or (and (> (length args) 0) (car args)) zepto:args) 0)))
+      (if (not (truthy? entry))
+          (die "No arguments specified." env)
+          (if (in? env entry)
+            ((get-from env (list entry :callback)))
+            (die (++ "Unknown command: " entry) env)))))))

@@ -22,7 +22,7 @@ line interfaces in zepto.
               (cli:command "register" register register-args)
               (cli:command "upgrade"  upgrade  upgrade-args)))
 ; this adds commands to the install endpoint
-(cli:create (list "help" help-install []) "install")
+(cli:create (cli:command "help" help-install []) "install")
 
 (cli:play)
 ```
