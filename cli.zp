@@ -12,25 +12,11 @@
 
   (write-help (lambda (env name)
     (if (truthy? env)
-      (begin
-        (err-ln (++ "Usage: " name))
-        (let ((help-text (get-from env [:info :help])))
-          (if (truthy? help-text)
-            (begin
-              (err-ln "")
-              (err-ln help-text)
-              (err-ln ""))))
-        (let ((cmds (hash:kv-map  (lambda (kv)
-                      (++ "\t" (car kv) ": "
-                          (get-from (cadr kv) (list :info :help) "No Documentation")))
-                    (get-from env :commands #{}))))
-          (if (truthy? cmds)
-            (begin
-              (err-ln "Commands:")
-              (map err-ln cmds))))
-        (err-ln "Arguments:")
-        (err-ln "\t--help|-h: Show this help mesage and exit")
-        (let ((args (hash:kv-map  (lambda (kv)
+      (let* ((cmds (hash:kv-map  (lambda (kv)
+                    (++ "\t" (car kv) ": "
+                        (get-from (cadr kv) (list :info :help) "No Documentation")))
+                  (get-from env :commands #{})))
+             (args (hash:kv-map  (lambda (kv)
                       (let ((meta (cadr kv)))
                       (++ "\t--" (car kv)
                           (let ((short (get-from meta :short)))
@@ -39,9 +25,35 @@
                           " (required type: "
                           (string:tail (->string (get-from (cadr kv) :type :string))) ") "
                           (if (get-from :meta :required #f) "REQUIRED" ""))))
-                    (get-from env (list :info :arguments) #{}))))
-          (if (truthy? args)
-              (map err-ln args))))
+                    (get-from env (list :info :arguments) #{})))
+             (cmd-str (if (truthy? cmds)
+                          (++ "[" (string:tail
+                                    (hash:keys-reduce (lambda (acc x) (++ acc "|" x)) ""
+                                                      (get-from env :commands #{})))
+                              "]")
+                          ""))
+             (args-str (if (truthy? args)
+                          (++ "[" (string:tail
+                                    (hash:keys-reduce (lambda (acc x) (++ acc "|" x)) ""
+                                                      (get-from env (list :info :arguments) #{})))
+                              "]")
+                          "")))
+      (begin
+        (err-ln (++ "Usage: " name " " cmd-str " " args-str))
+        (let ((help-text (get-from env [:info :help])))
+          (if (truthy? help-text)
+            (begin
+              (err-ln "")
+              (err-ln help-text)
+              (err-ln ""))))
+        (if (truthy? cmds)
+          (begin
+            (err-ln "Commands:")
+            (map err-ln cmds)))
+        (err-ln "Arguments:")
+        (err-ln "\t--help|-h: Show this help message and exit")
+        (if (truthy? args)
+            (map err-ln args))))
       (err-ln "No documentation for command available."))))
 
   (die (lambda (msg env name)
