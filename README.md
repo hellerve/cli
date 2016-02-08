@@ -9,22 +9,19 @@ line interfaces in zepto.
 (import-all "cli")
 
 ; The argument structure looks like this (similarish to argparse):
-(define install-args
-  #{"pleasedo"
-    #{:type     :number
-      :default  10
-      :required #f
-      :usage    foo you}})
+(define add-args
+  #{:help      "adds 1 to a number"
+    :arguments #{"pleasedo" #{:type     :number
+                              :default  "10"
+                              :required #t
+                              :usage    "foo you"}}})
 
 ; This adds commands to the toplevel CLI.
-(cli:create (list
-              (cli:command "install"  install  install-args)
-              (cli:command "register" register register-args)
-              (cli:command "upgrade"  upgrade  upgrade-args)))
+(define x (cli:create (list (cli:command "add" (lambda (x) (add1 (x "pleasedo"))) add-args))))
 ; this adds commands to the install endpoint
-(cli:create (cli:command "help" help-install []) "install")
+(define y (cli:create (cli:command "write-foo" (lambda (x) (write "foo")) #{}) "add" x))
 
-(cli:play)
+(cli:play "add" y)
 ```
 
 <hr/>
