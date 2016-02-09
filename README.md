@@ -21,7 +21,11 @@ line interfaces in zepto.
 ; this adds commands to the install endpoint
 (define y (cli:create (cli:command "write-foo" (lambda (x) (write "foo")) #{}) "add" x))
 
-(cli:play "add" y)
+; Get the party started.
+; Optionally takes a script name (if it deviates from the file name)
+; and a list of arguments (if you want to do your own processing before)
+; of the form #{:args ("list" "of" "arguments") :name "my-cool-alternative-name"}
+(cli:play y)
 ```
 
 <hr/>

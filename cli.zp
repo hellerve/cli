@@ -125,7 +125,10 @@
         (create-inner (car args) (cadr args) commands)
         (create-top-level commands)))))
 
-  (play (lambda (name tenv . args) 
+  (play (lambda (tenv . args) 
+    (let* ((args (if (truthy? args) (car args) #{}))
+           (name (if (truthy? (args :name)) (args :name) zepto:name))
+           (args (if (truthy? (args :args)) (args :args) zepto:args)))
     (define (internal env args traversed)
       (let ((wrap-in-cmd (lambda (x) (make-hash :commands x))))
         (if (or (eq? (get-from args 0 "") "--help") (eq? (get-from args 0 "") "-h"))
@@ -149,4 +152,4 @@
                        (if (> (length traversed) 0) (get-from tenv traversed) (wrap-in-cmd tenv))
                        (string:join (cons name (reverse traversed)) #\space)))
                 (die "No arguments specified." (wrap-in-cmd env) name))))))
-    (internal tenv (if (> (length args) 0) (car args) zepto:args) []))))
+    (internal tenv args [])))))
