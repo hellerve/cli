@@ -1,5 +1,5 @@
 (module "cli"
-  (exports
+  (export
     (list "command" command)
     (list "create" create)
     (list "play" play))
