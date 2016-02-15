@@ -11,10 +11,10 @@ line interfaces in zepto.
 ; The argument structure looks like this (similarish to argparse):
 (define add-args
   #{:help      "adds 1 to a number"
-    :arguments #{"pleasedo" #{:type     :number
-                              :default  "10"
-                              :required #t
-                              :usage    "foo you"}}})
+    :options #{"pleasedo" #{:type     :number
+                            :default  "10"
+                            :required #t
+                            :usage    "foo you"}}})
 
 ; This adds commands to the toplevel CLI.
 (define x (cli:create (list (cli:command "add" (lambda (x) (add1 (x "pleasedo"))) add-args))))
