@@ -14,7 +14,7 @@ line interfaces in zepto.
     :options #{"pleasedo" #{:type     :number
                             :default  "10"
                             :required #t
-                            :usage    "foo you"}}})
+                            :help     "foo you"}}})
 
 ; This adds commands to the toplevel CLI.
 (define x (cli:create (list (cli:command "add" (lambda (x) (add1 (x "pleasedo"))) add-args))))
