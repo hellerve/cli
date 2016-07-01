@@ -26,6 +26,14 @@ line interfaces in zepto.
 ; and a list of arguments (if you want to do your own processing before)
 ; of the form #{:args ("list" "of" "arguments") :name "my-cool-alternative-name"}
 (cli:play y)
+
+; Alternatively you can also specify additional arguments,
+; namely :version, :name, :description and :args where
+; :version is the tool version
+; :name is the name of the tool (will default to the script name)
+; :description is the tool description
+; :args are the alternative arguments (will default to the CLI args)
+(cli:play y #{:name "my-cool-tool" :description "It's magical!"})
 ```
 
 <hr/>
