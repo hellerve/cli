@@ -18,7 +18,7 @@ line interfaces in zepto.
 
 ; This adds commands to the toplevel CLI.
 (define x (cli:create (list (cli:command "add" (lambda (x) (add1 (x "pleasedo"))) add-args))))
-; this adds commands to the install endpoint
+; this adds commands to the add endpoint
 (define y (cli:create (cli:command "write-foo" (lambda (x) (write "foo")) #{}) "add" x))
 
 ; Get the party started.

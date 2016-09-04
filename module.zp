@@ -1,12 +1,12 @@
-#{:name "cli" 
-  :version "1.0.1" 
-  :license "GPLv2" 
+#{:name "cli"
+  :version "1.0.2"
+  :license "GPLv2"
   :tests []
   :type :library
-  :author #{:name "Veit Heller" 
-            :email "veit@veitheller.de" 
+  :author #{:name "Veit Heller"
+            :email "veit@veitheller.de"
             :github "@hellerve"}
-  :location #{:github "hellerve/cli" 
+  :location #{:github "hellerve/cli"
               :zpr "cli"}
   :zepto #{:version :any
            :ez #f

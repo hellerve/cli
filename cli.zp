@@ -133,6 +133,23 @@
       (parse-commands (parse-args args env name) env name)))
 
   (command (lambda (name f info)
+    "builds a command to be passed into <fun>cli:create</fun>.
+
+    Example of the <par>info</par> hashmap:
+    <zepto>
+      #{:help      \"a help string\"
+        :options #{\"optname\" #{:type     :number
+                                 :default  \"10\"
+                                 :required #t
+                                 :help     \"option help string\"}}}
+    </zepto>
+
+     params:
+       - name: the command name
+       - f: the function that handles the command
+       - info: the info hash
+     complexity: O(1)
+     returns: a hashmap representing a command"
     (make-hash name (make-hash :callback f :info info :type :command :commands #{}))))
 
   (create-inner (lambda (name env commands)
@@ -146,13 +163,31 @@
     (apply make-hash commands)))
 
   (create (lambda (commands . args)
+    "takes a list of arguments and creates an environment to be passed into
+     <fun>cli:play</fun>. Alternatively, it extends an existing command
+     environment; in that case it should be provided three arguments: the list,
+     the name of the argument to extend and the environment to extend.
+
+     params:
+       - commands: the list of commands
+       - args: optional varargs (should be two); representing the name and environment as explained above
+     complexity: O(1)
+     returns: an environment to be passed into <fun>cli:play</fun>"
     (if (not (in? [0 2] (length args)))
       (die "[Programming Error] create should be called with 1 or 3 arguments" #{} "")
       (if (truthy? args)
         (create-inner (car args) (cadr args) commands)
         (create-top-level commands)))))
 
-  (play (lambda (tenv . args) 
+  (play (lambda (tenv . args)
+    "starts the CLI parsing. Should be given an environment as created by
+     <fun>cli:create</fun> and optionally a hashmap that represents the options.
+
+     params:
+       - tenv: the environment
+       - args: an optional hashmap with the keys :name (defaulting to zepto:name), :version (defaulting to <zepto>\"&lt;no version info&gt;\"</zepto>, :description (defaulting to <zepto>\"\"</zepto>) and :args (defaulting to zepto:args)
+     complexity: O(n) where n represent the arguments (after that the complexity of the callbacks applies)
+     returns: this function terminates the program"
     (let* ((args    (if (truthy? args) (car args) #{}))
            (name    (get-from args :name zepto:name))
            (version (get-from args :version "<no version info>"))
