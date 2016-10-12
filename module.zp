@@ -1,5 +1,6 @@
 #{:name "cli"
-  :version "1.0.2"
+  :description "A composable command line interface generator"
+  :version "1.0.3"
   :license "GPLv2"
   :tests []
   :type :library
